@@ -96,15 +96,19 @@ def unanswered(request):
 def questions(request):
     return question_list(request, Question.objects.all(), _('questions'), show_summary=True)
 
-@decorators.render('questions.html')
 def tag(request, tag):
+    tag_obj = None
     try:
-        tag = Tag.active.get(name=unquote(tag))
+        tag_obj = Tag.active.get(name=unquote(tag))
     except Tag.DoesNotExist:
-        raise Http404
+        if django_settings.DISPLAY_EMPTY_LIST_FOR_NONEXISTENT_TAGS:
+            tag_obj = Tag(name=unquote(tag), used_count=0, created_by_id=-1)
+            tag_obj.id = -1
+        else:
+            raise Http404
 
     # Getting the questions QuerySet
-    questions = Question.objects.filter(tags__id=tag.id)
+    questions = Question.objects.filter(tags__id=tag_obj.id)
 
     if request.method == "GET":
         user = request.GET.get('user', None)
@@ -117,7 +121,7 @@ def tag(request, tag):
 
     # The extra tag context we need to pass
     tag_context = {
-        'tag' : tag,
+        'tag' : tag_obj,
     }
 
     # The context returned by the question_list function, contains info about the questions
@@ -137,7 +141,11 @@ def tag(request, tag):
     # Create the combined context
     context = dict(question_context.items() + tag_context.items())
 
-    return context
+    result = render_to_response('questions.html', context, context_instance = RequestContext(request))
+    if tag_obj.id < 0:
+        # prevent search engines indexing these pages / link spam attacks
+        result.status_code = 418 # I'm a teapot
+    return result
 
 @decorators.render('questions.html', 'questions', tabbed=False)
 def user_questions(request, mode, user, slug):
