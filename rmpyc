@@ -1,1 +1,3 @@
-rm `find . -name '*.pyc'`
+#!/bin/sh
+find . -name '*.pyc' -print0 | xargs --no-run-if-empty --null --max-chars=4096 rm
+
