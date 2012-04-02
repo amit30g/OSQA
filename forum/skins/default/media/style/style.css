@@ -1860,6 +1860,22 @@ a.comment-edit:hover {
     background-color: transparent;
 }
 
+a.comment-convert {
+    background-image: url("../images/convert-to-question-off.png"); /** sprite-ref: sprite; */
+    width: 14px;
+    height: 14px;
+    background-repeat: no-repeat;
+    background-color: transparent;
+}
+
+a.comment-convert:hover {
+    background-image: url("../images/convert-to-question-hover.png"); /** sprite-ref: sprite; */
+    width: 14px;
+    height: 14px;
+    background-repeat: no-repeat;
+    background-color: transparent;
+}
+
 img.subscription-remove {
     float: right;
 }
