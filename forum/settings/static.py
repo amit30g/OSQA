@@ -104,3 +104,8 @@ CUSTOM_HEAD = Setting('CUSTOM_HEAD', '', HEAD_SET, dict(
         help_text = _("Your custom Head elements."),
         widget=Textarea(attrs={'rows': '25'}),
         required=False))
+
+MATHJAX_ENABLED = Setting('MATHJAX_ENABLED', False, HEAD_SET, dict(
+    label = _("Enable LaTeX support"),
+    help_text = _("Enable LaTeX support via MathJax, by loading MathJax javascript"),
+    required=False))

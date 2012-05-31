@@ -60,6 +60,21 @@
         </script>
         <script type="text/javascript" src="{% media  "/media/js/osqa.main.js" %}"></script>
         {% include "base_onready.html" %}
+        {% if settings.MATHJAX_ENABLED %}
+        <script type="text/x-mathjax-config">
+           MathJax.Hub.Config({
+             "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] },
+             tex2jax: { inlineMath: [ ["$%","$%"] ],
+                        displayMath: [ ["$$","$$"] ],
+                        processEscapes: true,
+                        ignoreClass: "tex2jax_ignore|dno"
+             },
+             TeX: { noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } } },
+             messageStyle: "none"
+           });
+        </script>        
+        <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        {% endif %}        
 
         {% if settings.USE_PJAX %}
         <script type="text/javascript" src="{% media  "/media/js/jquery.pjax-8df345b0e7.js" %}"></script>
