@@ -61,3 +61,6 @@ AUTO_SET_TAG_ON_QUESTION = Setting('AUTO_SET_TAG_ON_QUESTION', False, VIEW_SET, 
 label = _("Automatically set tag on questions asked from tag page"), required=False,
 help_text = _("Automatically set the tag on new questions asked from the tag page")))
 
+USE_NOFOLLOW_ON_USER_LINKS = Setting('USE_NOFOLLOW_ON_USER_LINKS', False, VIEW_SET, dict(
+label = _("Set nofollow on links in questions/answers"), required=False,
+help_text = _("Set the nofollow attribute on links in questions/answers (only applies for new/edited questions/answers)")))

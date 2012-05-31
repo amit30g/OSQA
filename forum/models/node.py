@@ -11,7 +11,7 @@ from django.utils.safestring import mark_safe
 from django.utils.html import strip_tags
 from forum.utils.html import sanitize_html
 from forum.utils.userlinking import auto_user_link
-from forum.settings import SUMMARY_LENGTH
+from forum.settings import SUMMARY_LENGTH, USE_NOFOLLOW_ON_USER_LINKS
 from utils import PickledObjectField
 
 class NodeContent(models.Model):
@@ -29,7 +29,8 @@ class NodeContent(models.Model):
         return self.body
 
     def rendered(self, content):
-        return auto_user_link(self, self._as_markdown(content, *['auto_linker']))
+        extensions = ['auto_linker', 'nofollow'] if USE_NOFOLLOW_ON_USER_LINKS else ['auto_linker']
+        return auto_user_link(self, self._as_markdown(content, *extensions))
 
     @classmethod
     def _as_markdown(cls, content, *extensions):
