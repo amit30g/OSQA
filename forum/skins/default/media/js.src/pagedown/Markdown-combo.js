@@ -2269,6 +2269,7 @@ else
             elapsedTime = currTime - prevTime;
 
             pushPreviewHtml(text);
+            if (MathJax) { MathJax.Hub.Queue(["Typeset",MathJax.Hub]); }
         };
 
         // setTimeout is already used.  Used as an event listener.
