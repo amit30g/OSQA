@@ -2,10 +2,9 @@
 import datetime
 import logging
 from urllib import unquote
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import get_object_or_404
 from django.http import HttpResponseRedirect, Http404, HttpResponsePermanentRedirect
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
-from django.template import RequestContext
 from django import template
 from django.utils.html import *
 from django.db.models import Q, Count
@@ -24,6 +23,7 @@ from forum.actions import QuestionViewAction
 from forum.http_responses import HttpResponseUnauthorized
 from forum.feed import RssQuestionFeed, RssAnswerFeed
 from forum.utils.pagination import generate_uri
+from forum.views.render import render_response
 
 import decorators
 
@@ -72,7 +72,7 @@ def feed(request):
                 settings.APP_TITLE + _(' - ')+ _('latest questions'),
                 settings.APP_DESCRIPTION)(request)
 
-@decorators.render('index.html')
+@decorators.render('index.html', page_template='questions_page.html', parent_template='base.html')
 def index(request):
     paginator_context = QuestionListPaginatorContext()
     paginator_context.base_path = reverse('questions')
@@ -83,7 +83,7 @@ def index(request):
                          paginator_context=paginator_context,
                          page_title=_("Latest Questions"))
 
-@decorators.render('questions.html', 'unanswered', _('unanswered'), weight=400)
+@decorators.render('questions.html', 'unanswered', _('unanswered'), weight=400, page_template='questions_page.html', parent_template='base.html')
 def unanswered(request):
     return question_list(request,
                          Question.objects.exclude(id__in=Question.objects.filter(children__marked=True).distinct()).exclude(marked=True),
@@ -92,11 +92,11 @@ def unanswered(request):
                          _("Unanswered Questions"),
                          show_summary=True)
 
-@decorators.render('questions.html', 'questions', _('questions'), weight=0)
+@decorators.render('questions.html', 'questions', _('questions'), weight=0, page_template='questions_page.html', parent_template='base.html')
 def questions(request):
     return question_list(request, Question.objects.all(), _('questions'), show_summary=True)
 
-@decorators.render('questions.html')
+@decorators.render('questions.html', page_template='questions_page.html', parent_template='base.html')
 def tag(request, tag):
     try:
         tag = Tag.active.get(name=unquote(tag))
@@ -237,9 +237,9 @@ def search(request):
         else:
             return question_search(request, keywords)
     else:
-        return render_to_response("search.html", context_instance=RequestContext(request))
+        return render_response("search.html", request)
 
-@decorators.render('questions.html')
+@decorators.render('questions.html', page_template='questions_page.html', parent_template='base.html')
 def question_search(request, keywords):
     rank_feed = False
     can_rank, initial = Question.objects.search(keywords)
@@ -331,7 +331,7 @@ def answer_redirect(request, answer):
     return HttpResponseRedirect("%s?%s=%s&focusedAnswerId=%s#%s" % (
         answer.question.get_absolute_url(), _('page'), page, answer.id, answer.id))
 
-@decorators.render("question.html", 'questions')
+@decorators.render("question.html", 'questions', parent_template='base.html')
 def question(request, id, slug='', answer=None):
     try:
         question = Question.objects.get(id=id)
@@ -421,10 +421,10 @@ def revisions(request, id):
 
     rev_ctx.reverse()
 
-    return render_to_response('revisions.html', {
+    return render_response('revisions.html', {
     'post': post,
     'revisions': rev_ctx,
-    }, context_instance=RequestContext(request))
+    }, request)
 
 
 

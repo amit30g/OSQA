@@ -5,8 +5,7 @@ import logging
 import urllib
 from urlparse import urlparse
 
-from django.shortcuts import render_to_response, get_object_or_404
-from django.template import RequestContext
+from django.shortcuts import get_object_or_404
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, Http404
 from django.utils.safestring import mark_safe
@@ -28,6 +27,7 @@ from forum.authentication.base import InvalidAuthentication
 from forum.authentication import AUTH_PROVIDERS
 from forum.models import User, AuthKeyUserAssociation, ValidationHash
 from forum.actions import UserJoinsAction, UserLoginAction
+from forum.views.render import render_response
 from forum import settings
 
 from vars import ON_SIGNIN_SESSION_ATTR, PENDING_SUBMISSION_SESSION_ATTR
@@ -67,7 +67,7 @@ def signin_page(request):
     except:
         msg = None
 
-    return render_to_response(
+    return render_response(
             'auth/signin.html',
             {
             'msg': msg,
@@ -77,7 +77,7 @@ def signin_page(request):
             'stackitem_providers': stackitem_providers,
             'smallicon_providers': smallicon_providers,
             },
-            RequestContext(request))
+            request)
 
 def prepare_provider_signin(request, provider):
     force_email_request = request.REQUEST.get('validate_email', 'yes') == 'yes'
@@ -158,7 +158,7 @@ def external_register(request):
         form1 = SimpleRegistrationForm(request.POST)
 
         if form1.is_valid():
-            user_ = User(username=form1.cleaned_data['username'], email=form1.cleaned_data['email'])
+            user_ = User(username=form1.cleaned_data['username'], email=form1.cleaned_data['email'], real_name=form1.cleaned_data['real_name'])
             user_.email_isvalid = request.session.get('auth_validated_email', '') == form1.cleaned_data['email']
             user_.set_unusable_password()
 
@@ -209,6 +209,7 @@ def external_register(request):
 
         username = user_data.get('username', '')
         email = user_data.get('email', '')
+        real_name = user_data.get('real_name', '')
 
         if email:
             request.session['auth_validated_email'] = email
@@ -217,16 +218,17 @@ def external_register(request):
         'next': '/',
         'username': username,
         'email': email,
+        'real_name': real_name,
         })
 
     provider_context = AUTH_PROVIDERS[request.session['auth_provider']].context
 
-    return render_to_response('auth/complete.html', {
+    return render_response('auth/complete.html', {
     'form1': form1,
     'provider':provider_context and mark_safe(provider_context.human_name) or _('unknown'),
     'login_type':provider_context.id,
     'gravatar_faq_url':reverse('faq') + '#gravatar',
-    }, context_instance=RequestContext(request))
+    }, request)
 
 def request_temp_login(request):
     if request.method == 'POST':
@@ -256,9 +258,9 @@ def request_temp_login(request):
     else:
         form = TemporaryLoginRequestForm()
 
-    return render_to_response(
+    return render_response(
             'auth/temp_login_request.html', {'form': form},
-            context_instance=RequestContext(request))
+            request)
 
 def temp_signin(request, user, code):
     user = get_object_or_404(User, id=user)
@@ -308,7 +310,7 @@ def validate_email(request, user, code):
         EmailValidationAction(user=user, ip=request.META['REMOTE_ADDR']).save()
         return login_and_forward(request, user, reverse('index'), _("Thank you, your email is now validated."))
     else:
-        return render_to_response('auth/mail_already_validated.html', { 'user' : user }, RequestContext(request))
+        return render_response('auth/mail_already_validated.html', { 'user' : user }, request)
 
 def auth_settings(request, id):
     user_ = get_object_or_404(User, id=id)
@@ -357,14 +359,14 @@ def auth_settings(request, id):
         'id': k.id
         })
 
-    return render_to_response('auth/auth_settings.html', {
+    return render_response('auth/auth_settings.html', {
     'view_user': user_,
     "can_view_private": (user_ == request.user) or request.user.is_superuser,
     'form': form,
     'has_password': user_.has_usable_password(),
     'auth_keys': auth_keys_list,
     'allow_local_auth': AUTH_PROVIDERS.get('local', None),
-    }, context_instance=RequestContext(request))
+    }, request)
 
 def remove_external_provider(request, id):
     association = get_object_or_404(AuthKeyUserAssociation, id=id)
