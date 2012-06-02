@@ -2,6 +2,9 @@ import os.path
 file_path = os.path.dirname(os.path.abspath(__file__))
 one_level_up = os.path.dirname(file_path)
 file_dir = os.path.basename(file_path)
+activate_this = os.path.join(file_path, 'venv', 'bin', 'activate_this.py')
+if os.path.isfile(activate_this):
+	execfile(activate_this, dict(__file__=activate_this))
 
 import os
 import sys
@@ -14,3 +17,4 @@ sys.path.append(file_path)
 os.environ['DJANGO_SETTINGS_MODULE'] = '%s.settings' % file_dir
 import django.core.handlers.wsgi
 application = django.core.handlers.wsgi.WSGIHandler()
+
